@@ -1,9 +1,7 @@
 swagger: "2.0"
 info:
   version: "1.0.0"
-  title: "Messanger"
-host: "cc-messenger-app.herokuapp.com"
-basePath: "/"
+  title: "Messenger"
 tags:
 - name: "Messages"
   description: "Everything about Messages"
