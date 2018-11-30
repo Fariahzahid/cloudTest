@@ -9,6 +9,7 @@ tags:
     description: "Find out more about this messenger"
     url: "https://cc-messenger-app.herokuapp.com/"
 schemes:
+- "https"
 - "http"
 securityDefinitions:
   BasicAuth:
