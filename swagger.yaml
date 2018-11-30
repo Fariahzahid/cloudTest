@@ -7,7 +7,7 @@ tags:
   description: "Everything about Messages"
   externalDocs:
     description: "Find out more about this messenger"
-    url: "http://*.herokuapp.com"
+    url: "https://cc-messenger-app.herokuapp.com/"
 schemes:
 - "https"
 - "http"
