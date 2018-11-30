@@ -5,8 +5,14 @@
  */
 
 require_once __DIR__ . '/vendor/autoload.php';
+// require_once __DIR__ . '/db.php';
+
 
 $app = new Slim\App();
+
+global $dbConn;
+$dbConn = pg_connect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e")
+or die('Connection failed: ' . pg_last_error());
 
 
 /**
