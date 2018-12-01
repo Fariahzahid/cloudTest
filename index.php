@@ -24,12 +24,42 @@ $app = new \Slim\App($c);
  * Output-Formats: [application/json]
  */
 $app->DELETE('/messages/{messageId}/delete', function($request, $response, $args) {
+            $dbConn = pg_pconnect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e");
+            if (!$dbConn) {
+                echo "An error occured while connecting to database!\n";
+            }
+            $messageId = $args["messageId"];
+            $messages_read = array();
             
-            
-            
-            
-            $response->write('How about implementing deleteMessage as a DELETE method ?');
-            return $response;
+            if(is_numeric($messageId)) {
+                $result = pg_query($dbConn,
+                    "SELECT id FROM messages WHERE id=$messageId;");
+                if (!$result) {
+                    echo "An error occured while querying database.\n";
+                }
+                while ($row = pg_fetch_row($result)) {
+                    array_push($messages_read, $row[0]);
+                }
+                if(count($messages_read) == 0) {
+                    $response = $response->withStatus(404);
+                    return $response->write("Message not found!");
+                } else {
+                    $result = pg_query($dbConn,
+                        "DELETE FROM read_confirmations WHERE id=$messageId;");
+                    if (!$result) {
+                        echo "An error occured while querying database.\n";
+                    }
+                    $result = pg_query($dbConn,
+                        "DELETE FROM messages WHERE id=$messageId;");
+                    if (!$result) {
+                        echo "An error occured while querying database.\n";
+                    }
+                    $response = $response->write("Message successfully deleted.");
+                    return $response->withStatus(200);
+                }
+            }
+            $response = $response->write("Invalid messageId");
+            return $response->withStatus(404);
             });
 
 
@@ -45,14 +75,17 @@ $app->GET('/messages/{userId}', function($request, $response, $args) {
                 echo "An error occured while connecting to database!\n";
             }
             $userId = $args["userId"];
-            $result = pg_query($dbConn,
-                "SELECT * FROM read_confirmations WHERE receiver_id=" . $userId . " AND message_read=false;");
-            if (!$result) {
-                echo "An error occured while querying database.\n";
-            }
             $messages_read = array();
-            while ($row = pg_fetch_row($result)) {
-                array_push($messages_read, $row[0]);
+            
+            if(is_numeric($userId)) {
+                $result = pg_query($dbConn,
+                    "SELECT * FROM read_confirmations WHERE receiver_id=" . $userId . " AND message_read=false;");
+                if (!$result) {
+                    echo "An error occured while querying database.\n";
+                }
+                while ($row = pg_fetch_row($result)) {
+                    array_push($messages_read, $row[0]);
+                }
             }
             
             if(count($messages_read) >= 1) {
