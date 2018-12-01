@@ -79,7 +79,7 @@ $app->POST('/messages', function($request, $response, $args) {
             $id = null;
             $senderId = null;
             $text = null;
-            $read = null;
+            $receivers = null;
             if(array_key_exists("id",$parsedbody) & !$end) {
                 $id =       $parsedbody["id"];
                 $response->write('id must not be in message!');
@@ -101,16 +101,37 @@ $app->POST('/messages', function($request, $response, $args) {
                 $response = $response->withStatus(422);
                 return $response;
             }
-            if(array_key_exists("read",$parsedbody)) {
-                $read = $parsedbody["read"];
+            if(array_key_exists("receivers",$parsedbody) & count($parsedbody["receivers"]) >= 1) {
+                $receivers = $parsedbody["receivers"];
             } else {
-                $response->write('read is missing in message!');
+                $response->write('receivers are missing in message!');
                 $response = $response->withStatus(422);
                 return $response;
             }
             
+            $dbConn = pg_pconnect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e");
+            if (!$dbConn) {
+                echo "'There was an error while connecting to the database...";
+            }
+            
+            $result = pg_query($dbConn, 'SELECT max(id) from messages');
+            $highestId = pg_fetch_result($result, 0, 0);
+            $highestId = $highestId + 1;
+            
+            $result = pg_query($dbConn, 'INSERT INTO public.messages(
+                                        	id, "senderId", text, read)
+                                    	VALUES (' . $highestId . ', ' . $senderId . ', \'' . $text . '\', ' . $highestId . ');');
+            if (!$result) {
+                //echo "Ein Fehler ist aufgetreten.\n";
+            }
+            
+            foreach ($receivers AS $receiverId) {
+                $result = pg_query($dbConn, 'INSERT INTO public.read_confirmations(
+                                            	id, message_read, receiver_id)
+                                        	VALUES (' . $highestId . ', false,' . $receiverId . ');');
+            }
+            
             $response = $response->withStatus(200);
-//             $response->write('How about implementing sendMessage as a POST method ?');
             return $response;
             });
 

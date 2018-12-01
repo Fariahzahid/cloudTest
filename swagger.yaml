@@ -135,7 +135,7 @@ definitions:
     - "id"
     - "senderId"
     - "text"
-    - "read"
+    - "receivers"
     properties:
       senderId:
         type: "integer"
@@ -143,7 +143,7 @@ definitions:
       text:
         type: "string"
         example: "Hello, how are you?"
-      read:
+      receivers:
         type: "array"
         items:
           type: "integer"
