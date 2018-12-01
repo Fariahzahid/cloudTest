@@ -54,7 +54,7 @@ paths:
         description: "Message object that needs to be updated"
         required: true
         schema:
-          $ref: "#/definitions/CreateMessage"
+          $ref: "#/definitions/PutMessage"
       responses:
         404:
           description: "Message not found"
@@ -132,7 +132,6 @@ definitions:
   CreateMessage:
     type: "object"
     required:
-    - "id"
     - "senderId"
     - "text"
     - "receivers"
@@ -149,6 +148,24 @@ definitions:
           type: "integer"
     xml:
       name: "CreateMessage"
+  PutMessage:
+    type: "object"
+    required:
+    - "id"
+    - "senderId"
+    - "text"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      senderId:
+        type: "integer"
+        format: "int64"
+      text:
+        type: "string"
+        example: "Hello, how are you?"
+    xml:
+      name: "PutMessage"
   Message:
     type: "object"
     required:
