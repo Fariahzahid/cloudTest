@@ -41,7 +41,7 @@ paths:
     put:
       tags:
       - "Messages"
-      summary: "Update Message if it is unread"
+      summary: "Update Message"
       description: ""
       operationId: "updateMessage"
       consumes:
@@ -87,11 +87,36 @@ paths:
           description: "Invalid input"
       security:
       - BasicAuth: []
+  /messages/{userId}/all:
+    get:
+      tags:
+      - "Messages"
+      summary: "Get all messages for userId"
+      description: ""
+      operationId: "readAllMessages"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "userId"
+        in: "path"
+        description: "userId of user which messages to get"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "List of unread messages of user with userId"
+        405:
+          description: "Invalid input"
+      security:
+      - BasicAuth: []
   /messages/{messageId}/delete:
     delete:
       tags:
       - "Messages"
-      summary: "Update Message if it is unread"
+      summary: "Delete Message"
       description: ""
       operationId: "deleteMessage"
       consumes:
