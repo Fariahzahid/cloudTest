@@ -40,29 +40,43 @@ $app->DELETE('/messages/{messageId}/delete', function($request, $response, $args
  * Output-Formats: [application/json]
  */
 $app->GET('/messages/{userId}', function($request, $response, $args) {
-//             $dbConn = pg_connect($host, $dbName, $user, $password);
-//             $dbConn = pg_connect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e")
-//             or die('Connection failed: ' . pg_last_error());
-            
             $dbConn = pg_pconnect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e");
             if (!$dbConn) {
-                echo "Ein Fehler ist aufgetreten.\n";
+                echo "An error occured while connecting to database!\n";
             }
-            
-            
-            $result = pg_query($dbConn, "SELECT id, username, password FROM users");
+            $userId = $args["userId"];
+            $result = pg_query($dbConn,
+                "SELECT * FROM read_confirmations WHERE receiver_id=" . $userId . " AND message_read=false;");
             if (!$result) {
-                echo "Ein Fehler ist aufgetreten.\n";
+                echo "An error occured while querying database.\n";
             }
-
+            $messages_read = array();
             while ($row = pg_fetch_row($result)) {
-                echo "UserId: $row[0]  UserName: $row[1]";
-                $response->write($row[1]);
-                echo "<br />\n";
+                array_push($messages_read, $row[0]);
             }
-            $dbConn->close();
+            
+            if(count($messages_read) >= 1) {
+                $int_mess_read = implode(',', $messages_read);
+                $result = pg_query($dbConn,
+                    "UPDATE read_confirmations SET message_read=true WHERE id IN ( $int_mess_read );");
+                if (!$result) {
+                    echo "An error occured while querying database.\n";
+                }
+                
+                $result = pg_query($dbConn,
+                    "SELECT senderid, text FROM messages WHERE id IN ( $int_mess_read );");
+                if (!$result) {
+                    echo "An error occured while querying database.\n";
+                }
+    
+                while ($row = pg_fetch_row($result)) {
+                    echo "User with Id $row[0], wrote you to you: $row[1]";
+                    echo "<br />\n";
+                }
+            } else {
+                echo "All messages already delivered!";
+            }
             $response = $response->withStatus(200);
-            $response->write('How about implementing sendMessage as a GET method ?');
             return $response;
             });
 
@@ -150,7 +164,6 @@ $app->PUT('/messages', function($request, $response, $args) {
             $response->write('How about implementing updateMessage as a PUT method ?');
             return $response;
             });
-
 
 
 $app->run();
