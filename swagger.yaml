@@ -87,6 +87,31 @@ paths:
           description: "Invalid input"
       security:
       - BasicAuth: []
+  /messages/{messageId}/read:
+    get:
+      tags:
+      - "Messages"
+      summary: "Get which users already read messages"
+      description: ""
+      operationId: "usersReadMessage"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "messageId"
+        in: "path"
+        description: "messageId of message to check readers"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "List of users who read read the message"
+        422:
+          description: "Invalid input"
+      security:
+      - BasicAuth: []
   /messages/{userId}/all:
     get:
       tags:

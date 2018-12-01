@@ -45,14 +45,29 @@ $app->DELETE('/messages/{messageId}/delete', function($request, $response, $args
                     return $response->write("Message not found!");
                 } else {
                     $result = pg_query($dbConn,
+                        "SELECT COUNT(message_read) FROM read_confirmations WHERE id=$messageId AND message_read=true;");
+                    if (!$result) {
+                        echo "An error occured while querying database.\n";
+                        return $response->withStatus(500);
+                    }
+                    $row = pg_fetch_row($result);
+                    $messagesFound = $row[0];
+                    echo $messagesFound;
+                    if($messagesFound >= 1) {
+                        return $response->withStatus(404)->write("Message already read");
+                    }
+                    
+                    $result = pg_query($dbConn,
                         "DELETE FROM read_confirmations WHERE id=$messageId;");
                     if (!$result) {
                         echo "An error occured while querying database.\n";
+                        return $response->withStatus(500);
                     }
                     $result = pg_query($dbConn,
                         "DELETE FROM messages WHERE id=$messageId;");
                     if (!$result) {
                         echo "An error occured while querying database.\n";
+                        return $response->withStatus(500);
                     }
                     $response = $response->write("Message successfully deleted.");
                     return $response->withStatus(200);
@@ -62,6 +77,40 @@ $app->DELETE('/messages/{messageId}/delete', function($request, $response, $args
             return $response->withStatus(404);
             });
 
+
+/**
+ * GET usersReadMessage
+ * Summary: Get which users already read the message
+ * Notes:
+ * Output-Formats: [application/json]
+ */
+$app->GET('/messages/{messageId}/read', function($request, $response, $args) {
+            $dbConn = pg_pconnect("host=ec2-54-246-85-234.eu-west-1.compute.amazonaws.com dbname=dcr3qut0dr1rit user=huxpssrspgwwum password=5282cc466a257a47f323a72891b12b3fce7dd9478a25a028364f422652bb380e");
+            if (!$dbConn) {
+                echo "An error occured while connecting to database!\n";
+                return $response->withStatus(500);
+            }
+            $messageId = $args["messageId"];
+            $usersIdsWhoReadMessage = array();
+            
+            if(is_numeric($messageId)) {
+                $result = pg_query($dbConn,
+                    "SELECT receiver_id FROM read_confirmations WHERE id=" . $messageId . " AND message_read=true;");
+                if (!$result) {
+                    echo "An error occured while querying database.\n";
+                    return $response->withStatus(500);
+                }
+                while ($row = pg_fetch_row($result)) {
+                    array_push($usersIdsWhoReadMessage, $row[0]);
+                    echo "User with id $row[0] already read the message";
+                }
+                if(count($usersIdsWhoReadMessage) == 0) {
+                    echo "Nobody has read the message yet.";
+                }
+                return $response->withStatus(200);
+            }
+            return $response->withStatus(404)->write("Message not found!");
+            });
 
 /**
  * GET readMessages
