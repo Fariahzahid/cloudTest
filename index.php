@@ -290,7 +290,7 @@ $app->POST('/messages', function($request, $response, $args) {
                     return $response->withStatus(500);
                 }
             }
-            return $response->withStatus(200)->write("Message sent");
+            return $response->withStatus(200)->write("Message (Id:$highestId) sent");
             });
 
 
