@@ -166,7 +166,7 @@ $app->POST('/messages', function($request, $response, $args) {
             $highestId = $highestId + 1;
             
             $result = pg_query($dbConn, 'INSERT INTO public.messages(
-                                        	id, "senderId", text, read)
+                                        	id, "senderid", text, read)
                                     	VALUES (' . $highestId . ', ' . $senderId . ', \'' . $text . '\', ' . $highestId . ');');
             if (!$result) {
                 //echo "Ein Fehler ist aufgetreten.\n";
